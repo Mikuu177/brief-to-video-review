@@ -1,0 +1,41 @@
+name: checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15.13-bookworm
+        env:
+          POSTGRES_USER: creator
+          POSTGRES_PASSWORD: review_test_only
+          POSTGRES_DB: creator_review_test
+        ports: [5432:5432]
+        options: --health-cmd="pg_isready -U creator" --health-interval=5s --health-retries=20
+      redis:
+        image: redis:7.2-bookworm
+        ports: [6379:6379]
+    env:
+      TEST_DATABASE_URL: postgresql+psycopg://creator:review_test_only@127.0.0.1:5432/creator_review_test
+      TEST_REDIS_URL: redis://127.0.0.1:6379/0
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg poppler-utils tesseract-ocr tesseract-ocr-chi-sim fonts-noto-cjk procps
+      - run: pip install -r requirements.lock
+      - run: npm ci
+      - run: npm ci
+        working-directory: apps/web
+      - run: npm run lint && npm run build
+        working-directory: apps/web
+      - run: ruff check apps/api scripts tests
+      - run: pytest -q
+      - run: node tests/e2e/workspace_route.cjs
+      - run: python scripts/audit_public_source.py

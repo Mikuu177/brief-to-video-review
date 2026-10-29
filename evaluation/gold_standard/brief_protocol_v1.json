@@ -1,0 +1,32 @@
+{
+  "version": "brief-label-protocol-v1",
+  "status": "TEMPLATE_NO_CONFIRMED_LABELS",
+  "sources": [],
+  "confirmed_labels": 0,
+  "metrics": null,
+  "annotation_fields": [
+    "file_sha256",
+    "unit_key",
+    "source_span",
+    "type",
+    "subject",
+    "action",
+    "negation",
+    "value",
+    "unit",
+    "scope",
+    "conditions",
+    "exceptions",
+    "risk",
+    "reviewer",
+    "label_status",
+    "adjudication"
+  ],
+  "procedure": [
+    "Use authorized sources only.",
+    "Split source families before tuning; no related material across development and holdout.",
+    "Two independent human annotators read the original before model candidates.",
+    "Record disagreements and adjudication; retain non-requirement controls.",
+    "AI-generated labels are not independent human ground truth."
+  ]
+}

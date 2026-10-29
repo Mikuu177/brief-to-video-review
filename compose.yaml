@@ -1,0 +1,70 @@
+name: brief-to-video-review
+x-app: &app
+  build:
+    context: .
+    dockerfile: docker/Dockerfile
+  env_file: .env
+  environment:
+    DATABASE_URL: postgresql+psycopg://creator:${POSTGRES_PASSWORD:?Run bootstrap first}@db:5432/creator_review
+    REDIS_URL: redis://redis:6379/0
+    DATA_DIR: /app/data
+  volumes:
+    - private_data:/app/data
+  depends_on:
+    db:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  restart: unless-stopped
+services:
+  db:
+    image: postgres:15.13-bookworm
+    environment:
+      POSTGRES_DB: creator_review
+      POSTGRES_USER: creator
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run bootstrap first}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, pg_isready -U creator -d creator_review]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  redis:
+    image: redis:7.2-bookworm
+    command: [redis-server, --appendonly, 'yes']
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  api:
+    <<: *app
+    command: [sh, -c, 'python scripts/bootstrap.py && uvicorn app.main:app --host 0.0.0.0 --port 8008']
+    ports:
+      - 127.0.0.1:${REVIEW_BIND_PORT:-8008}:8008
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8008/api/v1/health/ready')"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+  worker:
+    <<: *app
+    command: [python, scripts/worker.py]
+    depends_on:
+      api:
+        condition: service_healthy
+  recovery:
+    <<: *app
+    command: [sh, -c, 'while true; do python scripts/recover.py; sleep 30; done']
+    depends_on:
+      api:
+        condition: service_healthy
+volumes:
+  postgres_data:
+  redis_data:
+  private_data:

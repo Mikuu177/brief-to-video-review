@@ -1,0 +1,473 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "creator-review/brief-integrity-v1.1",
+  "version": "brief-integrity-v1.1",
+  "scope": "Frozen G0 contracts. Source/DocumentUnit/whole-channel SourceSpan implemented in G1; job/disposition/rule/relation/snapshot reserved for G2-G4 and MUST NOT be claimed implemented.",
+  "invariants": [
+    "Span offsets are Python Unicode code-point offsets, start inclusive/end exclusive. Match original unit hash before use.",
+    "PDF bbox uses normalized display-raster coordinates after page rotation.",
+    "No cross-channel concatenated span; no bounding-box inference from native text to OCR.",
+    "A source hash/version change creates a new manifest. No mutable source/unit API.",
+    "Job completion, readability, semantic completeness and human approval are independent.",
+    "No source approval or business rule confirmation is created by G1."
+  ],
+  "$defs": {
+    "Source": {
+      "type": "object",
+      "required": [
+        "id",
+        "manifest_id",
+        "asset_id",
+        "project_id",
+        "source_sha256",
+        "role",
+        "platform",
+        "filename",
+        "status",
+        "inventory",
+        "report"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "manifest_id": {
+          "type": "string"
+        },
+        "asset_id": {
+          "type": "string"
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "source_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "role": {
+          "enum": [
+            "primary",
+            "supplement",
+            "reference"
+          ]
+        },
+        "platform": {
+          "type": "string"
+        },
+        "filename": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "inventory": {
+          "type": "object"
+        },
+        "report": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    "DocumentUnit": {
+      "type": "object",
+      "required": [
+        "id",
+        "file_id",
+        "unit_key",
+        "parent_key",
+        "kind",
+        "locator",
+        "native_text",
+        "ocr_text",
+        "content_hash",
+        "state",
+        "position",
+        "issues",
+        "features",
+        "artifacts",
+        "spans"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "file_id": {
+          "type": "string"
+        },
+        "unit_key": {
+          "type": "string"
+        },
+        "parent_key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "kind": {
+          "type": "string"
+        },
+        "locator": {
+          "type": "object"
+        },
+        "native_text": {
+          "type": "string"
+        },
+        "ocr_text": {
+          "type": "string"
+        },
+        "content_hash": {
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "CANDIDATE",
+            "NEEDS_HUMAN",
+            "BLOCKED"
+          ]
+        },
+        "position": {
+          "type": "integer"
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "features": {
+          "type": "object"
+        },
+        "artifacts": {
+          "type": "object"
+        },
+        "spans": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SourceSpan"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "SourceSpan": {
+      "type": "object",
+      "required": [
+        "span_id",
+        "unit_id",
+        "channel",
+        "start",
+        "end",
+        "unit_hash"
+      ],
+      "properties": {
+        "span_id": {
+          "type": "string"
+        },
+        "unit_id": {
+          "type": "string"
+        },
+        "channel": {
+          "enum": [
+            "native",
+            "ocr"
+          ]
+        },
+        "start": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unit_hash": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "DocumentUnitJob": {
+      "type": "object",
+      "required": [
+        "id",
+        "unit_id",
+        "source_hash",
+        "pipeline_version",
+        "idempotency_key",
+        "state",
+        "attempt",
+        "lease_expires_at",
+        "request_id",
+        "usage"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "unit_id": {
+          "type": "string"
+        },
+        "source_hash": {
+          "type": "string"
+        },
+        "pipeline_version": {
+          "type": "string"
+        },
+        "idempotency_key": {
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "PENDING",
+            "LEASED",
+            "RUNNING",
+            "COMPLETED",
+            "BLOCKED",
+            "UNKNOWN_REMOTE",
+            "FAILED",
+            "CANCELED"
+          ]
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lease_expires_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "request_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "usage": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Disposition": {
+      "type": "object",
+      "required": [
+        "id",
+        "source_span_ids",
+        "category",
+        "rationale",
+        "actor",
+        "snapshot_hash"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "source_span_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "category": {
+          "enum": [
+            "REQUIREMENT",
+            "NON_REQUIREMENT",
+            "CONTEXT_ONLY",
+            "UNKNOWN"
+          ]
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "actor": {
+          "type": "string"
+        },
+        "snapshot_hash": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AtomicRule": {
+      "type": "object",
+      "required": [
+        "id",
+        "source_span_ids",
+        "subject",
+        "action",
+        "negation",
+        "value",
+        "unit",
+        "scope",
+        "conditions",
+        "exceptions",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "source_span_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "subject": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "negation": {
+          "type": "boolean"
+        },
+        "value": {
+          "type": [
+            "string",
+            "number",
+            "null"
+          ]
+        },
+        "unit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scope": {
+          "type": "object"
+        },
+        "conditions": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "exceptions": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "status": {
+          "enum": [
+            "CANDIDATE",
+            "NEEDS_HUMAN",
+            "REJECTED",
+            "CONFIRMED"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "Relation": {
+      "type": "object",
+      "required": [
+        "id",
+        "type",
+        "member_ids",
+        "source_span_ids",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "SAME_MEANING",
+            "CONTRADICTS",
+            "EXCEPTION_OF",
+            "CONDITIONAL_ON",
+            "SUPERSEDES",
+            "SCOPE_OVERLAP",
+            "UNKNOWN"
+          ]
+        },
+        "member_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source_span_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "RuleSnapshot": {
+      "type": "object",
+      "required": [
+        "id",
+        "source_manifest_hash",
+        "pipeline_hash",
+        "unit_ids",
+        "rule_ids",
+        "relation_ids",
+        "semantic_audit",
+        "source_review_actor",
+        "approval_actor",
+        "production_ready"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "source_manifest_hash": {
+          "type": "string"
+        },
+        "pipeline_hash": {
+          "type": "string"
+        },
+        "unit_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "rule_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "relation_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "semantic_audit": {
+          "type": "string"
+        },
+        "source_review_actor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "approval_actor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "production_ready": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

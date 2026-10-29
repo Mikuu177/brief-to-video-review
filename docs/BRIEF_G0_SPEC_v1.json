@@ -1,0 +1,113 @@
+{
+  "version": "brief-integrity-v1.1",
+  "frozen_date": "2026-10-28",
+  "status": "ENGINEERING_BASELINE",
+  "authorization": "User requested implementation of G0 and G1; this is not brand sign-off or human gold labeling",
+  "release_mode": "preview_only",
+  "p0_targets_unverified": true,
+  "p0": {
+    "max_pdf_pages": 200,
+    "max_file_bytes": 209715200,
+    "max_project_files": 50,
+    "max_project_pdf_pages": 2000,
+    "max_parallel_projects": 5,
+    "max_ui_users": 20
+  },
+  "reader_limits": {
+    "max_archive_members": 5000,
+    "max_uncompressed_bytes": 268435456,
+    "max_zip_ratio": 200,
+    "max_pixels_per_render": 12000000,
+    "max_units_per_file": 20000,
+    "max_text_characters": 2000000,
+    "max_render_dpi": 300,
+    "base_render_dpi": 150,
+    "max_retries": 2,
+    "file_timeout_seconds": 900,
+    "ocr_timeout_seconds": 90,
+    "cpu_seconds": 600,
+    "memory_bytes": 2147483648,
+    "artifact_max_bytes": 268435456,
+    "max_region_rereads_per_page": 12,
+    "max_pdf_image_regions": 500,
+    "max_table_rows": 2000,
+    "max_table_columns": 200
+  },
+  "formats": {
+    "pdf": "native + Poppler count + full-raster Tesseract chi_sim/eng; quality remains provisional",
+    "docx": "XML part inventory, text/table/image enumeration; unsupported layout/revisions explicitly blocked",
+    "txt": "decode complete bounded text, preserve every nonempty line and line counts",
+    "doc": "preview only; blocked in integrity pipeline; convert and verify DOCX",
+    "xlsx": "not admitted as Brief; existing script viewer unaffected"
+  },
+  "status_contract": {
+    "flow": [
+      "INGESTED",
+      "READING",
+      "READING_FINISHED",
+      "BLOCKED",
+      "FAILED"
+    ],
+    "readability": [
+      "CANDIDATE",
+      "NEEDS_HUMAN",
+      "BLOCKED"
+    ],
+    "processing_complete": "Exact expected page/structural-unit keys vs persisted processed outputs; no missing/duplicate IDs",
+    "semantic_audit": "NOT_STARTED for G0/G1",
+    "production_ready": false
+  },
+  "quality_targets": {
+    "critical_recall": 0.99,
+    "critical_one_sided_95_lower": 0.97,
+    "all_recall": 0.97,
+    "precision": 0.95,
+    "slo_progress_p95_seconds": 2,
+    "slo_100_page_p95_minutes": 45,
+    "measured": false
+  },
+  "roles": {
+    "engineering": "Codex implementing under user authorization",
+    "material_owner": "User must later declare full source package; not pre-filled",
+    "annotator_a": "UNASSIGNED",
+    "annotator_b": "UNASSIGNED",
+    "business_approver": "UNASSIGNED"
+  },
+  "hard_rules": [
+    "No semantic completeness inferred from page processing/OCR confidence",
+    "Do not modify legacy assets/source_blocks/rulesets/runs/human decisions",
+    "Partial/unsupported/unknown scopes block production readiness",
+    "Whole-document acknowledgments do not become machine OCR proof",
+    "Existing two Briefs are development-family samples, never a held-out set"
+  ],
+  "qualification_hardware": {
+    "cpu": "Apple M1 Pro",
+    "ram_bytes": 34359738368,
+    "logical_cpus": 10,
+    "os": "macOS-26.5.1-arm64-arm-64bit-Mach-O",
+    "reader_parallelism": 1,
+    "ocr_threads": 1,
+    "linux_container_qualified": false,
+    "capacity_gate": "G5; not qualified by the two Briefs"
+  },
+  "call_budget": {
+    "g1_remote_model_calls": 0,
+    "g1_remote_model_tokens": 0,
+    "g1_paid_cloud_operations": 0,
+    "g2_default_remote_calls": 0,
+    "g2_enable_requires": "Versioned model window/call/token/quota budget before semantic jobs may execute"
+  },
+  "p1": {
+    "status": "NOT_QUALIFIED_SEPARATE_GATE",
+    "max_pdf_pages": 2000,
+    "max_project_files": 200,
+    "max_project_pdf_pages": 10000
+  },
+  "statistical_preregistration": {
+    "critical": "one-sided 95% Clopper-Pearson lower bound; gate >=0.97 plus observed recall >=0.99",
+    "grouping": "Report document/project worst cases and project-cluster bootstrap 95% intervals (10000 draws, seed=20261028); insufficient independent groups is insufficient evidence",
+    "denominator": "frozen independently human-adjudicated holdout only; two Briefs here excluded",
+    "missing_outcomes": "Count every unread/unknown required span against recall; never drop difficult inputs",
+    "human_work": "Report suspected gap proportion and total human minutes per 100 physical PDF pages; no timing inferred from machine execution"
+  }
+}

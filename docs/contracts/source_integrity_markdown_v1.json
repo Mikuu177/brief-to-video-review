@@ -1,0 +1,25 @@
+{
+  "version": "source-markdown-v1",
+  "extends": "brief-integrity-v1.1",
+  "source_of_truth": "Immutable original/source units and SHA, not Markdown conversion",
+  "implementation": "write_source_markdown is called on new completed reads; prior G1 records can derive it through authorized POST",
+  "layout_authority": "Original PDF/Office and raster/locator; not MD",
+  "coverage": "All unit metadata, original native/OCR channels, exact text and hashes; no semantic rephrasing",
+  "audit": "Reopen actual UTF-8 bytes; independently parse framed records and compare all expected unit/channel IDs and contents against DB units",
+  "validation_rounds": [
+    {
+      "id": "structure",
+      "can_establish": "registered unit-set reconciliation"
+    },
+    {
+      "id": "reading",
+      "can_establish": "provisional native/OCR/region diagnostics; unresolved remains NEEDS_HUMAN or BLOCKED"
+    },
+    {
+      "id": "markdown",
+      "can_establish": "generation-time archive fidelity, never upstream OCR/semantic truth"
+    }
+  ],
+  "semantic_audit": "NOT_STARTED in G0/G1",
+  "production_ready": false
+}
