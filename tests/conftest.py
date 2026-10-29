@@ -14,6 +14,11 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 
+@pytest.fixture(autouse=True)
+def test_service_configuration(monkeypatch):
+    monkeypatch.setattr(settings, "redis_url", os.environ.get("TEST_REDIS_URL", "redis://127.0.0.1:56380/0"))
+
+
 @pytest.fixture
 def environment(tmp_path, monkeypatch):
     monkeypatch.setattr(settings, "auth_mode", "session")
@@ -34,7 +39,6 @@ def environment(tmp_path, monkeypatch):
     monkeypatch.setattr(review, "SessionLocal", sessions)
     for module in ("assets", "rulesets", "reviews"):
         monkeypatch.setattr(f"app.api.{module}.enqueue", lambda run_id: None)
-    monkeypatch.setattr(settings, "redis_url", os.environ.get("TEST_REDIS_URL", "redis://127.0.0.1:56380/0"))
     from redis import Redis
 
     Redis.from_url(settings.redis_url).delete("login-attempts:testclient")

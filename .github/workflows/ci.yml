@@ -13,7 +13,7 @@ jobs:
           POSTGRES_PASSWORD: review_test_only
           POSTGRES_DB: creator_review_test
         ports: [5432:5432]
-        options: --health-cmd="pg_isready -U creator" --health-interval=5s --health-retries=20
+        options: --health-cmd="pg_isready -U creator -d creator_review_test" --health-interval=5s --health-retries=20
       redis:
         image: redis:7.2-bookworm
         ports: [6379:6379]
